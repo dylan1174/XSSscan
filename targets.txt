@@ -1,0 +1,7 @@
+http://192.168.15.128/xss/example1.php?name=hacker
+http://192.168.15.128/xss/example2.php?name=hacker
+http://192.168.15.128/xss/example3.php?name=hacker
+http://192.168.15.128/xss/example4.php?name=hacker
+http://192.168.15.128/xss/example5.php?name=hacker
+http://192.168.15.128/xss/example6.php?name=hacker
+http://192.168.15.128/xss/example7.php?name=hacker
