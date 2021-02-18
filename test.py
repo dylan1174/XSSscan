@@ -3,7 +3,7 @@ import random
 import string
 import test
 import requests
-from core.utils import getUrl, getParams, random_upper, get_complete_url,add_extra_params
+from core.utils import getUrl, getParams, random_upper, get_complete_url, add_extra_params
 import copy
 from bs4 import BeautifulSoup
 import re
@@ -73,51 +73,13 @@ xsscheck
 </html>
 
 '''
-
-
-class Test(object):
-    def __init__(self, result):
-        self.result = result
-
-    def test(self):
-        print(self.result)
-
-    def test2(self):
-        print(self.result)
-
-    pass
-
-
+import argparse
 if __name__ == '__main__':
-    # print('Find XSS vul :{} param:{} payload:{}'.format(11, 22, 33))
-    # params = {'name': '<script>alert("xss")</script>'}
-    urls = getUrl(url=testurl())
-    # res = requests.get(url=url, params=params)
-    # print(res.text)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-t", help="set thread count",
+                        type=int, dest='thread_count')
+    args = parser.parse_args()
+    print(type(args.thread_count))
+    print('线程数被设置为' + str(args.thread_count))
 
-    # 测试htmlparser
-    # for url in urls:
-    #     _url = getUrl(url)
-    #     print('***********' + '正在解析' + _url + '*************')
-    #     params = getParams(url)
-    #     for paramsName in params.keys():
-    #         params[paramsName] = 'xsscheck'
-    #     res = requests.get(url=_url, params=params)
-    #     occurences = searchInputInResponse(html_doc=res.text, xsscheck='xsscheck')
-    #     for o in occurences:
-    #         print('注入点类型:' + o['type'])
-    #         print('注入点id:' + str(o['position']))
-    #         print('注入点详细信息:')
-    #         print('标签名:' + o['details']['tagname'], end='')
-    #         print('\t标签属性:' + str(o['details']['attributes']), end='')
-    #         print('\n标签内容:' + o['details']['content'] + '\n', end='')
 
-    url = 'https://cn.bing.com/search?q=python+%E5%A6%82%E4%BD%95%E8%8E%B7%E5%BE%97request%E6%8A%A5%E6%96%87&qs=n&form=QBRE&msbsrank=0_0__0&sp=-1&pq=python+%E5%A6%82%E4%BD%95%E8%8E%B7%E5%BE%97request%E6%8A%A5%E6%96%87&sc=0-20&sk=&cvid=FECCAF3B63174E258EA64ACC74B461B3'
-    params = getParams(url)
-    host = getUrl(url)
-    # print(params)
-    # print(host)
-    # print(url)
-    # print(get_complete_url(url=host, params=params))
-    params = add_extra_params(params=params)
-    print(params)
