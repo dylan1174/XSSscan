@@ -4,58 +4,6 @@
 
 from html.parser import HTMLParser
 
-test_html_doc = '''
-<!DOCTYPE html>
-
-<html lang="en">
-<head>
-<meta charset="utf-8"/>
-<title>PentesterLab » Web for Pentester</title>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<meta content="Web For Pentester" name="description"/>
-<meta content="Louis Nyffenegger (louis@pentesterlab.com)" name="author"/>
-<!-- Le styles -->
-<link href="/css/bootstrap.css" rel="stylesheet"/>
-<style type="text/css">
-      body {
-        padding-top: 60px;
-        padding-bottom: 40px;
-      }
-    </style>
-<link href="/css/bootstrap-responsive.css" rel="stylesheet"/>
-</head>
-<body>
-<div class="navbar navbar-inverse navbar-fixed-top">
-<div class="navbar-inner">
-<div class="container">
-<a class="btn btn-navbar" data-target=".nav-collapse" data-toggle="collapse">
-<span class="icon-bar"></span>
-<span class="icon-bar"></span>
-<span class="icon-bar"></span>
-</a>
-<a class="brand" href="https://pentesterlab.com/">PentesterLab.com</a>
-<div class="nav-collapse collapse">
-<ul class="nav">
-<li class="active"><a href="/">Home</a></li>
-</ul>
-</div><!--/.nav-collapse -->
-</div>
-</div>
-</div>
-<div class="container">
-<html>
-Hello 
-xsscheck
-      <footer>
-<p>© PentesterLab 2013</p>
-</footer>
-</html></div> <!-- /container -->
-</body>
-</html>
-# html解析器
-
-'''
-
 '''
 开始标签: 将标签名 属性(key value)字典加入到树中
 结束标签: 如果树不为空 则弹出树中的开始标签 并将开始标签信息加入分词器tokenizer中
@@ -133,7 +81,7 @@ def searchInputInResponse(html_doc, xsscheck):
         if _xsscheck in tagname:
             occurences.append({
                 'type': 'inTag',
-                'position': 'index',
+                'position': index,
                 'details': token
             })
         # 如果xsscheck处于content中
@@ -174,7 +122,7 @@ def searchInputInResponse(html_doc, xsscheck):
 
                 if content:
                     occurences.append({
-                        "type": "attibute",
+                        "type": "attribute",
                         "position": index,
                         "details": {"tagname": tagname, "content": content, "attributes": [(k, v)]},
                     })
@@ -183,6 +131,58 @@ def searchInputInResponse(html_doc, xsscheck):
             index += 1
     return occurences
 
+
+test_html_doc = '''
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>PentesterLab » Web for Pentester</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="Web For Pentester" name="description"/>
+<meta content="Louis Nyffenegger (louis@pentesterlab.com)" name="author"/>
+<!-- Le styles -->
+<link href="/css/bootstrap.css" rel="stylesheet"/>
+<style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    </style>
+<link href="/css/bootstrap-responsive.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="navbar navbar-inverse navbar-fixed-top">
+<div class="navbar-inner">
+<div class="container">
+<a class="btn btn-navbar" data-target=".nav-collapse" data-toggle="collapse">
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+</a>
+<a class="brand" href="https://pentesterlab.com/">PentesterLab.com</a>
+<div class="nav-collapse collapse">
+<ul class="nav">
+<li class="active"><a href="/">Home</a></li>
+</ul>
+</div><!--/.nav-collapse -->
+</div>
+</div>
+</div>
+<div class="container">
+<html>
+Hello 
+xsscheck
+      <footer>
+<p>© PentesterLab 2013</p>
+</footer>
+</html></div> <!-- /container -->
+</body>
+</html>
+# html解析器
+
+'''
 
 # if __name__ == '__main__':
 #     occureneces = searchInputInResponse(html_doc=html_doc, xsscheck='xsscheck')
@@ -193,3 +193,4 @@ def searchInputInResponse(html_doc, xsscheck):
 #         print('标签名:' + o['details']['tagname'], end='')
 #         print('\t标签属性:' + str(o['details']['attributes']), end='')
 #         print('\t标签内容:' + o['details']['content'].strip('\n'), end='')
+

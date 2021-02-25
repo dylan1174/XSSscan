@@ -69,6 +69,7 @@ class Scan(threading.Thread):
 
             # 2.根据回显位置构造 payload测试
             occurences = searchInputInResponse(html_doc=res.text, xsscheck=xsschecker)
+            print('潜在注入点信息为' + str(occurences))
             if len(occurences) == 0:
                 # 如果没有检测到反射点
                 flag = get_random_str(5)
@@ -115,10 +116,8 @@ class Scan(threading.Thread):
                         'msg': 'IE下可执行的表达式 expression(alert(1))'
                     }
                     self.result.append(tmp_res)
-                    break
         # 如果被非style标签包裹 试探payload:</被包裹标签名><随机七位字符>  真实payload</被包裹标签名><随机七位字符>
         else:
-            # print('其他标签检测' + details['tagname'])
             flag = get_random_str(7)
             # 如果文本未被标签包裹(tagname==html) 仅仅为html文本中的内容则payload不需要</{tagname}>去闭合上一个标签
             if details['tagname'] == 'html':
@@ -133,6 +132,7 @@ class Scan(threading.Thread):
             _locations = searchInputInResponse(html_doc=res.text, xsscheck=flag)
             for location in _locations:
                 if location['details']['tagname'] == flag:
+                    # print('发现了flag标签详细信息为' + str(location['details']) + '\nxss类型:可在html中构造新标签')
                     tmp_res = {
                         'host': get_complete_url(url, params),
                         'ParamPosition': 'query',
@@ -143,22 +143,26 @@ class Scan(threading.Thread):
                         'msg': 'html文本中可构造新标签'
                     }
                     self.result.append(tmp_res)
-                    break
 
     def attribute_check(self, occurence, url, params, paramName):
         _type = occurence['type']
         details = occurence['details']
         # 如果潜在注入点在属性名的位置
         if details['content'] == 'key':
+            # print('进入属性名回显测试')
             # 1.测试payload:><flag 通过是否产生flag标签来判断能否正确闭合原标签
             flag = get_random_str(7)
             payload = '><{}'.format(flag)
+            print('回显位置在属性名中 测试payload是' + payload)
             true_payload = "><svg onload=alert`1`>"
             params[paramName] = payload
             res = requests.get(url=url, params=params, headers=getHeader())
             _locations = searchInputInResponse(html_doc=res.text, xsscheck=flag)
+            print('测试payload回显信息为:' + str(_locations))
             for location in _locations:
-                if location['details']['tagname'] == flag:
+                if flag in location['details']['tagname']:
+                    # 此处tagname不能等于== 会漏报形为><flag=xxx(原网页设定的属性值)> --> 解析为tagname == 'flag=xxx'
+                    print('回显位置在属性名中:发现了flag标签 详细信息为' + str(location['details']) + '\nxss类型:可在属性值中构造新标签')
                     tmp_res = {
                         'host': get_complete_url(url, params),
                         'ParamPosition': 'query',
@@ -166,12 +170,12 @@ class Scan(threading.Thread):
                         'Payload': true_payload,
                         'Request': '',
                         'Response': '',
-                        'msg': '属性中可以>闭合原标签,构造新标签'
+                        'msg': '属性名可以闭合原标签,构造新标签'
                     }
                     self.result.append(tmp_res)
-                    break
+                    return
 
-            # 2.测试payload:flag= 通过能否产生flag属性判断能否构造事件
+            # 2.测试payload:flag= 通过能否产生flag属性判断能否构造响应事件
             flag = get_random_str(5)
             payload = flag + '='
             true_payload = 'onmouseover=prompt(1)'
@@ -181,6 +185,7 @@ class Scan(threading.Thread):
             for location in _locations:
                 for _k, _v in location['details']['attributes']:
                     if _k == flag:
+                        print('回显位置在属性名中:发现了flag属性值 详细信息为' + str(location['details']) + '\nxss类型:标签中可以构造新属性')
                         tmp_res = {
                             'host': get_complete_url(url, params),
                             'ParamPosition': 'query',
@@ -188,20 +193,22 @@ class Scan(threading.Thread):
                             'Payload': true_payload,
                             'Request': '',
                             'Response': '',
-                            'msg': '属性中可自定义新的响应事件'
+                            'msg': '标签中可以构造新属性'
                         }
                         self.result.append(tmp_res)
-                        break
+
         # 如果潜在注入点在属性值的位置
         else:
             # 1.测试payload:('|"| )flag=('|"| ) 通过能否产生flag属性 判断能否构造事件
             flag = get_random_str(5)
-            for _payload in ["'", "\"", " "]:
-                payload = _payload + flag + '=' + _payload
+            for _payload in ["\'", "\"", " ", "\"\"", "\'\'"]:
+                payload = _payload + ' ' + flag + '=' + _payload
+                print('标签中构造新属性测试payload' + payload)
                 true_payload = "{payload} onmouseover=prompt(1){payload}".format(payload=_payload)
                 params[paramName] = payload
                 res = requests.get(url=url, params=params, headers=getHeader())
                 _locations = searchInputInResponse(html_doc=res.text, xsscheck=flag)
+                print("测试payload回显信息" + str(_locations))
                 for location in _locations:
                     for _k, _v in location['details']['attributes']:
                         if _k == flag:
@@ -212,10 +219,10 @@ class Scan(threading.Thread):
                                 'Payload': true_payload,
                                 'Request': '',
                                 'Response': '',
-                                'msg': '属性中可自定义新的响应事件'
+                                'msg': '标签中可构造新属性'
                             }
                             self.result.append(tmp_res)
-                            break
+                            return
 
             # 2.测试payload:('|"| )><flag> 通过是否产生flag标签 判断能否正确闭合原标签
             flag = get_random_str(7)
@@ -234,14 +241,14 @@ class Scan(threading.Thread):
                             'Payload': true_payload,
                             'Request': '',
                             'Response': '',
-                            'msg': '属性中可以闭合原标签,构造新标签'
+                            'msg': '属性值可以闭合原标签,构造新标签'
                         }
                         self.result.append(tmp_res)
-                        break
+                        return
 
-            # 3.针对特殊属性名进行处理
+            # 3.针对特殊属性名进行处理  出现在特殊属性的属性值中不需要构造新标签或者新属性也可能产生漏洞
             specialAttributes = ['srcdoc', 'src', 'action', 'data', 'href']  # 特殊处理属性
-            keyname = details["attibutes"][0][0]
+            keyname = details["attributes"][0][0]
             tagname = details["tagname"]
             if keyname in specialAttributes:
                 flag = get_random_str(7)
@@ -266,7 +273,7 @@ class Scan(threading.Thread):
                             'msg': '特殊属性{}的属性值可控'.format(keyname)
                         }
                         self.result.append(tmp_res)
-                        break
+                        return
             # 4.针对style标签进行处理
             elif keyname == 'style':
                 true_payload = "expression(a({}))".format(get_random_str(6))
@@ -286,7 +293,7 @@ class Scan(threading.Thread):
                             'msg': '特殊属性{}的属性值可控'.format(keyname)
                         }
                         self.result.append(tmp_res)
-                        break
+                        return
             # 5.当flag作为属性值且属性名为响应事件的情况下
             elif keyname.lower() in XSS_EVAL_ATTITUDES:
                 payload = get_random_str(6)
@@ -295,6 +302,7 @@ class Scan(threading.Thread):
                 res = requests.get(url=url, params=params, headers=getHeader())
                 _locations = searchInputInResponse(html_doc=res.text, xsscheck=payload)
                 for location in _locations:
+                    print('测试payload回显信息' + str(location))
                     _attribute = location['details']['attributes']
                     if len(_attribute) > 0 and _attribute[0][0].lower() == keyname.lower() and _attribute[0][
                         1] == payload:
@@ -308,7 +316,6 @@ class Scan(threading.Thread):
                             'msg': '响应事件{}的属性值可控'.format(keyname)
                         }
                         self.result.append(tmp_res)
-                        break
 
     def comment_check(self, occurence, url, params, paramName):
         _type = occurence['type']
@@ -321,7 +328,7 @@ class Scan(threading.Thread):
             res = requests.get(url=url, params=params, headers=getHeader())
             _locations = searchInputInResponse(html_doc=res.text, xsscheck=flag)
             for location in _locations:
-                if location['details']['tagname'] == flag:
+                if flag in location['details']['tagname']:
                     tmp_res = {
                         'host': get_complete_url(url, params),
                         'ParamPosition': 'query',
@@ -332,7 +339,6 @@ class Scan(threading.Thread):
                         'msg': 'html注释标签可被闭合'
                     }
                     self.result.append(tmp_res)
-                    break
 
     def script_check(self, occurence, url, params, paramName):
         # html标签检测

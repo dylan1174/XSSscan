@@ -9,6 +9,11 @@ import json
 2.根据线程数 构造scan实例 传入target队列
 3.接受返回的result数组 写入result.json文件中
 
+待完成模块
+1.加入参数设置忽略的响应码 
+2.结果输出在html中
+3.各种流程的检测
+
 result中字典的格式
 url:
 position:query
@@ -23,7 +28,7 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--thread', help='set thread count', dest='thread_count', default=5)
     parser.add_argument('-f', '--output', help='output file path', dest='output', default='result.json')
     args = parser.parse_args()
-    thread_count = args.thread_count
+    thread_count = int(args.thread_count)
 
     # 读取目标文件
     targets = []

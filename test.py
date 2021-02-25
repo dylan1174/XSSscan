@@ -12,14 +12,18 @@ from urllib.parse import urlparse
 
 
 def testurl():
-    urls = ['http://192.168.15.128/xss/example1.php?name=hacker',
-            'http://192.168.15.128/xss/example2.php?name=hacker',
-            'http://192.168.15.128/xss/example3.php?name=hacker',
-            'http://192.168.15.128/xss/example4.php?name=hacker',
-            'http://192.168.15.128/xss/example5.php?name=hacker',
-            'http://192.168.15.128/xss/example6.php?name=hacker',
-            'http://192.168.15.128/xss/example7.php?name=hacker'
-            ]
+    # pentester 测试
+    # urls = ['http://192.168.15.128/xss/example1.php?name=hacker',
+    #         'http://192.168.15.128/xss/example2.php?name=hacker',
+    #         'http://192.168.15.128/xss/example3.php?name=hacker',
+    #         'http://192.168.15.128/xss/example4.php?name=hacker',
+    #         'http://192.168.15.128/xss/example5.php?name=hacker',
+    #         'http://192.168.15.128/xss/example6.php?name=hacker',
+    #         'http://192.168.15.128/xss/example7.php?name=hacker'
+    #         ]
+    urls = [
+        '127.0.0.1/htmlcontent.php?payload=1'
+    ]
     return urls
 
 
@@ -73,13 +77,6 @@ xsscheck
 </html>
 
 '''
-import argparse
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-t", help="set thread count",
-                        type=int, dest='thread_count')
-    args = parser.parse_args()
-    print(type(args.thread_count))
-    print('线程数被设置为' + str(args.thread_count))
+
 
 
