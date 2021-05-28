@@ -67,4 +67,10 @@ TOP_RISK_GET_PARAMS = {"id", 'action', 'type', 'm', 'callback', 'cb'}
 
 xsschecker = 'xxt04m'
 
-
+file_extensions = [
+    '.css', '.scss', '.sass', '.js',
+    '.mp4', '.avi', 'mp3'
+    '.doc', '.docx', '.pdf', '.ppt', '.pptx', 'xls',
+    '.jpg', '.gif', '.png', '.jpeg', '.ico', 'webp',
+    '.zip', '.7z', '.ini',
+]

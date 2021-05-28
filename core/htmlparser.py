@@ -171,11 +171,12 @@ test_html_doc = '''
 </div>
 </div>
 <div class="container">
-<html>
+<h2>
 Hello 
 xsscheck
       <footer>
 <p>© PentesterLab 2013</p>
+</h2>
 </footer>
 </html></div> <!-- /container -->
 </body>
@@ -184,13 +185,13 @@ xsscheck
 
 '''
 
-# if __name__ == '__main__':
-#     occureneces = searchInputInResponse(html_doc=html_doc, xsscheck='xsscheck')
-#     for o in occureneces:
-#         print('注入点类型:' + o['type'])
-#         print('注入点id:' + str(o['position']))
-#         print('注入点详细信息:')
-#         print('标签名:' + o['details']['tagname'], end='')
-#         print('\t标签属性:' + str(o['details']['attributes']), end='')
-#         print('\t标签内容:' + o['details']['content'].strip('\n'), end='')
+if __name__ == '__main__':
+    occureneces = searchInputInResponse(html_doc=test_html_doc, xsscheck='xsscheck')
+    for o in occureneces:
+        print('注入点类型:' + o['type'])
+        print('注入点index:' + str(o['position']))
+        print('注入点详细信息:')
+        print('标签名:' + o['details']['tagname'], end='')
+        print('\t标签属性:' + str(o['details']['attributes']), end='')
+        print('\t标签内容:' + o['details']['content'].strip('\n'), end='')
 

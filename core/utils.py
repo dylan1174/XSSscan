@@ -1,13 +1,15 @@
 from core.config import HEADER, USER_AGENTS, TOP_RISK_GET_PARAMS
+from urllib.parse import urlparse
 import random
 import string
+import re
 
 
 # 传入url 返回字典(key:参数名 value:参数值)
 def getParams(url):
     params = {}
     data = ''
-    if '=' in url:
+    if '=' in url and '?' in url:
         data = url.split('?')[1]
     if not data:
         return params
@@ -72,3 +74,52 @@ def add_extra_params(params):
     for p in risk_params:
         params[p] = ''
     return params
+
+
+def replace_rewrite_data(part):
+    # 纯数字
+    int_flag = True
+    for ch in part:
+        if ord(ch) < 48 or ord(ch) > 57:
+            int_flag = False
+            break
+    if int_flag:
+        return "{{data}}"
+    # 中文
+    for ch in part:
+        if '\u4e00' <= ch <= '\u9fff':
+            return "{{data}}"
+    # 长度超过15
+    if len(part) > 15:
+        return "{{data}}"
+    # 超过4位的连续纯数字
+    if re.findall('[0-9]{4,}', part):
+        return "{{data}}"
+    if '%' in part or '#' in part:
+        return "{{data}}"
+    return part
+
+
+def remove_schema(url):
+    if url.startswith('https://'):
+        return url[8:]
+    elif url.startswith('http://'):
+        return url[7:]
+    else:
+        return url
+
+
+def request_info(url, method, header, body):
+    _path = urlparse(url).path
+    _schema = urlparse(url).scheme
+    _header = header
+    _body = body
+    s = '{method} {path} {schema}\n {header}'.format(method=method, path=_path, schema=_schema, header=header)
+    # dic = {
+    #     'method': _method,
+    #     'path': _path,
+    #     'schema': _schema,
+    #     'headers': _header,
+    #     'body': _body
+    # }
+    return s

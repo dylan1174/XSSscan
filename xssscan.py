@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
     root_path = os.getcwd()
     result_path = root_path + '\\' + args.output
-    with open(result_path, 'w', encoding='utf-8') as f:
+    with open(result_path, 'a', encoding='utf-8') as f:
         f.write(json_data)
 
     i = 1

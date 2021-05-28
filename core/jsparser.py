@@ -262,3 +262,22 @@ def analyse_Literal(node) -> list:
             r.extend(analyse_Literal(item))
         return r
     return []
+
+# if __name__ == '__main__':
+#     test_js_doc = '''
+#     var t = "xsscheck";
+#     // xsscheck in single line
+#     /*
+#     xsscheck in block
+#     */
+#
+#     testfun = function (){
+#         consolo.log("xsscheckinfunction");
+#     }
+#     xsscheckraw
+#
+#     ""
+#     '''
+#
+#     occurences = searchInputInScript(script=test_js_doc, input="xsscheck")
+#     print(occurences)

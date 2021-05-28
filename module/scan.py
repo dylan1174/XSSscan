@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 from core.jsparser import searchInputInScript
 from core.htmlparser import searchInputInResponse
 from core.config import xsschecker, XSS_EVAL_ATTITUDES
-from core.utils import getUrl, getParams, getHeader, get_random_str, random_upper, get_complete_url, add_extra_params
+from core.utils import getUrl, getParams, getHeader, get_random_str, random_upper, get_complete_url, add_extra_params, request_info
 
 '''
 基本流程:
@@ -17,14 +17,7 @@ from core.utils import getUrl, getParams, getHeader, get_random_str, random_uppe
 
 未完成:
 发现页面隐藏参数 进行参数合并
-dom xss如何检测
-不同的潜在注入点流程验证
 js解析源码阅读
-
-
-已完成:
-结果保存字典结构 以及输出形式（scan函数返回一个result数组）
-发现危险参数 进行参数合并
 
 返回的结果字典:
 url:
@@ -49,7 +42,7 @@ class Scan(threading.Thread):
             self.scan(target=url)
 
     def scan(self, target):
-        sys.stdout.write('正在对{}进行扫描\n'.format(target))
+        sys.stdout.write('\033[0;32;40m正在对{}进行扫描 \033[0m\n'.format(target))
         # print('正在对' + target + '进行扫描')
         host = urlparse(target).netloc
         url = getUrl(target)
@@ -69,7 +62,7 @@ class Scan(threading.Thread):
 
             # 2.根据回显位置构造 payload测试
             occurences = searchInputInResponse(html_doc=res.text, xsscheck=xsschecker)
-            print('潜在注入点信息为' + str(occurences))
+            print("\033[0;31;40m{url}参数{param}发现潜在注入点 \033[0m".format(url=url,param=paramsName))
             if len(occurences) == 0:
                 # 如果没有检测到反射点
                 flag = get_random_str(5)
@@ -111,7 +104,7 @@ class Scan(threading.Thread):
                         'ParamPosition': 'query',
                         'ParamKey': paramName,
                         'Payload': true_payload,
-                        'Request': '',
+                        'Request': request_info(url, res.request.method, res.request.headers, res.request.body),
                         'Response': '',
                         'msg': 'IE下可执行的表达式 expression(alert(1))'
                     }
@@ -138,7 +131,7 @@ class Scan(threading.Thread):
                         'ParamPosition': 'query',
                         'ParamKey': paramName,
                         'Payload': true_payload,
-                        'Request': '',
+                        'Request': request_info(url, res.request.method, res.request.headers, res.request.body),
                         'Response': '',
                         'msg': 'html文本中可构造新标签'
                     }
@@ -168,7 +161,7 @@ class Scan(threading.Thread):
                         'ParamPosition': 'query',
                         'ParamKey': paramName,
                         'Payload': true_payload,
-                        'Request': '',
+                        'Request': request_info(url, res.request.method, res.request.headers, res.request.body),
                         'Response': '',
                         'msg': '属性名可以闭合原标签,构造新标签'
                     }
@@ -191,7 +184,7 @@ class Scan(threading.Thread):
                             'ParamPosition': 'query',
                             'ParamKey': paramName,
                             'Payload': true_payload,
-                            'Request': '',
+                            'Request': request_info(url, res.request.method, res.request.headers, res.request.body),
                             'Response': '',
                             'msg': '标签中可以构造新属性'
                         }
@@ -217,7 +210,7 @@ class Scan(threading.Thread):
                                 'ParamPosition': 'query',
                                 'ParamKey': paramName,
                                 'Payload': true_payload,
-                                'Request': '',
+                                'Request': request_info(url, res.request.method, res.request.headers, res.request.body),
                                 'Response': '',
                                 'msg': '标签中可构造新属性'
                             }
@@ -239,7 +232,7 @@ class Scan(threading.Thread):
                             'ParamPosition': 'query',
                             'ParamKey': paramName,
                             'Payload': true_payload,
-                            'Request': '',
+                            'Request': request_info(url, res.request.method, res.request.headers, res.request.body),
                             'Response': '',
                             'msg': '属性值可以闭合原标签,构造新标签'
                         }
@@ -268,7 +261,7 @@ class Scan(threading.Thread):
                             'ParamPosition': 'query',
                             'ParamKey': paramName,
                             'Payload': true_payload,
-                            'Request': '',
+                            'Request': request_info(url, res.request.method, res.request.headers, res.request.body),
                             'Response': '',
                             'msg': '特殊属性{}的属性值可控'.format(keyname)
                         }
@@ -288,7 +281,7 @@ class Scan(threading.Thread):
                             'ParamPosition': 'query',
                             'ParamKey': paramName,
                             'Payload': true_payload,
-                            'Request': '',
+                            'Request': request_info(url, res.request.method, res.request.headers, res.request.body),
                             'Response': '',
                             'msg': '特殊属性{}的属性值可控'.format(keyname)
                         }
@@ -311,7 +304,7 @@ class Scan(threading.Thread):
                             'ParamPosition': 'query',
                             'ParamKey': paramName,
                             'Payload': true_payload,
-                            'Request': '',
+                            'Request': request_info(url, res.request.method, res.request.headers, res.request.body),
                             'Response': '',
                             'msg': '响应事件{}的属性值可控'.format(keyname)
                         }
@@ -334,7 +327,7 @@ class Scan(threading.Thread):
                         'ParamPosition': 'query',
                         'ParamKey': paramName,
                         'Payload': true_payload,
-                        'Request': '',
+                        'Request': request_info(url, res.request.method, res.request.headers, res.request.body),
                         'Response': '',
                         'msg': 'html注释标签可被闭合'
                     }
@@ -357,12 +350,12 @@ class Scan(threading.Thread):
                     'ParamPosition': 'query',
                     'ParamKey': paramName,
                     'Payload': payload,
-                    'Request': '',
+                    'Request': request_info(url, res.request.method, res.request.headers, res.request.body),
                     'Response': '',
                     'msg': 'script标签可被闭合'
                 }
                 self.result.append(tmp_res)
-                break
+                return
         # js语法树检测
         source = details['content']
         _occurences = searchInputInScript(input=xsschecker, script=source)
@@ -374,8 +367,9 @@ class Scan(threading.Thread):
                 payload = "\n;{};//".format(flag)
                 truepayload = "\n;{};//".format('prompt(1)')
                 params[paramName] = payload
-                res = requests.get(url=url, params=params, headers=getHeader()).text
-                for _item in searchInputInResponse(html_doc=res, xsscheck=flag):
+                res = requests.get(url=url, params=params, headers=getHeader())
+                _request_info = request_info(url, res.request.method, res.request.headers, res.request.body)
+                for _item in searchInputInResponse(html_doc=res.text, xsscheck=flag):
                     if _item['details']['tagname'] != 'script':
                         continue
                     resp2 = _item['details']['content']
@@ -387,20 +381,21 @@ class Scan(threading.Thread):
                                 'ParamPosition': 'query',
                                 'ParamKey': paramName,
                                 'Payload': truepayload,
-                                'Request': '',
+                                'Request': _request_info,
                                 'Response': '',
                                 'msg': 'js单行注释可被bypass'
                             }
                             self.result.append(tmp_res)
-                            break
+                            return
 
             elif _type == "BlockComment":
                 flag = "0x" + get_random_str(4, "abcdef123456")
                 payload = "*/{};/*".format(flag)
                 truepayload = "*/{};/*".format('prompt(1)')
                 params[paramName] = payload
-                res = requests.get(url=url, params=params, headers=getHeader()).text
-                for _item in searchInputInResponse(html_doc=res, xsscheck=flag):
+                res = requests.get(url=url, params=params, headers=getHeader())
+                _request_info = request_info(url, res.request.method, res.request.headers, res.request.body)
+                for _item in searchInputInResponse(html_doc=res.text, xsscheck=flag):
                     if _item['details']['tagname'] != 'script':
                         continue
                     resp2 = _item['details']['content']
@@ -412,20 +407,22 @@ class Scan(threading.Thread):
                                 'ParamPosition': 'query',
                                 'ParamKey': paramName,
                                 'Payload': truepayload,
-                                'Request': '',
+                                'Request': _request_info,
                                 'Response': '',
                                 'msg': 'js块注释可被bypass'
                             }
                             self.result.append(tmp_res)
-                            break
+                            return
 
             elif _type == "ScriptIdentifier":
+                res = requests.get(url=url, params=params, headers=getHeader())
+                _request_info = request_info(url, res.request.method, res.request.headers, res.request.body)
                 tmp_res = {
                     'host': get_complete_url(url, params),
                     'ParamPosition': 'query',
                     'ParamKey': paramName,
                     'Payload': 'alert(1)',
-                    'Request': '',
+                    'Request': _request_info,
                     'Response': '',
                     'msg': '可直接执行任意js命令'
                 }
@@ -443,9 +440,10 @@ class Scan(threading.Thread):
                     payload = flag
                     truepayload = "prompt(1)"
                 params[paramName] = payload
-                res = requests.get(url=url, params=params, headers=getHeader()).text
+                res = requests.get(url=url, params=params, headers=getHeader())
+                _resqust_info = request_info(url, res.request.method, res.request.headers, res.request.body)
                 resp2 = None
-                for _item in searchInputInResponse(html_doc=res, xsscheck=payload):
+                for _item in searchInputInResponse(html_doc=res.text, xsscheck=payload):
                     if payload in _item["details"]["content"] and _item["type"] == "script":
                         resp2 = _item["details"]["content"]
 
@@ -461,9 +459,11 @@ class Scan(threading.Thread):
                                     'ParamPosition': 'query',
                                     'ParamKey': paramName,
                                     'Payload': truepayload,
-                                    'Request': '',
+                                    'Request': _resqust_info,
                                     'Response': '',
                                     'msg': 'script脚本内容可被任意设置'
                                 }
                                 self.result.append(tmp_res)
-                                break
+
+
+

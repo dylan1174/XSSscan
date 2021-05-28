@@ -1,15 +1,7 @@
-import os
-import random
-import string
-import test
+from core.checkstatus import check_status
 import requests
-from core.utils import getUrl, getParams, random_upper, get_complete_url, add_extra_params
-import copy
-from bs4 import BeautifulSoup
-import re
-from core.htmlparser import MyHTMLParser, searchInputInResponse
 from urllib.parse import urlparse
-
+from core.utils import request_info
 
 def testurl():
     # pentester 测试
@@ -77,6 +69,33 @@ xsscheck
 </html>
 
 '''
+
+if __name__ == '__main__':
+    # urls = [
+    #     'ad.nearme.com.cn/administracion',
+    #     'ad.nearme.com.cn/consumer',
+    #     'ad.nearme.com.cn/admin_files',
+    #     'ad.nearme.com.cn/page/Administrator',
+    #     'ad.nearme.com.cn/pub/sitemap',
+    #     'ad.nearme.com.cn/d.php',
+    #     'www.baidu.com',
+    #     'www.bing.com'
+    # ]
+    #
+    # res = check_status(urls)
+    # print(res)
+    # file_path = 'E:\\test.txt'
+    # with open(file_path, 'w') as f:
+    #     for u in res:
+    #         f.write(u + '\n')
+    # print('结束')
+
+    # url = 'https://cn.bing.com/search?q=1'
+    # res = requests.get('https://cn.bing.com/search?q=1')
+    # dic = request_info(url, res)
+    # print(dic)
+
+    print("\033[0;31;40m{url}参数{param}发现潜在注入点 \033[0m".format(url='b', param='a'))
 
 
 
